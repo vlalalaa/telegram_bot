@@ -43,7 +43,7 @@ def get_news():
 
 
 def get_calculator():
-    return "Напишіть математичний вираз, наприклад: 2 + 2, 5 * 5, 10 / 2."
+    return "Напишіть математичний вираз, наприклад: 2 + 2, 5 * 5, 10 / 2. Зверніть увагу, що потрібно ставити пробіл між цифрами та знаками!"
 
 
 def calculate(expression):
@@ -206,7 +206,7 @@ def get_message(message):
         get_tasks_list(message)
 
     elif message.text == "/del_task":
-        bot.send_message(chat_id, "Уууу. Ви вже зовсім розлінились! Це ви можете зробити і самі. Просто знайдіть файл tasks, відкрийте його, видаліть певне завдання і збережіть зміни.")
+        bot.send_message(chat_id, "Уууу. Ви вже зовсім розлінились! Це ви можете зробити і самі.")
 
     elif chat_id in user_state and user_state[chat_id] == "waiting_for_task":
         add_task(message)
