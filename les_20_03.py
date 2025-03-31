@@ -4,13 +4,17 @@ import telebot
 import json
 import os
 from dotenv import load_dotenv
+from flask import Flask, request
 
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 API_KEY = os.getenv("API_KEY")
+MY_DOMAIN = os.getenv("MY_DOMAIN")
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+app = Flask(__name__)
 
 quiz_state = {}
 
@@ -142,6 +146,8 @@ def show_menu(message):
     bot.send_message(message.chat.id, menu_text)
 
 
+# Обробка повідомлень бота
+@bot.message_handler(func=lambda message: True)
 def get_message(message):
     chat_id = message.chat.id
 
@@ -209,16 +215,27 @@ def get_message(message):
         return
     else:
         bot.send_message(message.chat.id, get_weather(message.text))
-try:
-    updates = bot.get_updates()
-    last_update_id = 0
-    if updates:
-        last_update_id = updates[-1].update_id
-    while True:
-        updates = bot.get_updates(offset=last_update_id + 1)
-        for i in updates:
-            if i.message:
-                get_message(i.message)
-                last_update_id = i.update_id
-except Exception as e:
-    print(f'Помилка: {e}')
+
+
+# Налаштування Webhook
+def set_webhook():
+    webhook_url = f"{MY_DOMAIN}/{TELEGRAM_TOKEN}"  # Замініть на вашу URL адресу
+    bot.set_webhook(url=webhook_url)
+
+
+@app.route('/')
+def index():
+    return "Flask сервер працює!"
+
+
+@app.route('/' + TELEGRAM_TOKEN, methods=['POST'])
+def webhook():
+    json_str = request.get_data().decode("UTF-8")
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])  # Обробляємо нові оновлення, передані через webhook
+    return "OK", 200  # Повертаємо успішну відповідь
+
+
+if __name__ == "__main__":
+    set_webhook()  # Налаштування вебхука
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))  # Використовуйте PORT для Render.com
